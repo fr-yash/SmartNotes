@@ -4,6 +4,7 @@ import NoteCard from '../components/NoteCard';
 import CreateNoteModal from '../components/CreateNoteModal';
 import EditNoteModal from '../components/EditNoteModal';
 import AIResultModal from '../components/AIResultModal';
+import SummaryResultModal from '../components/SummaryResultModal';
 import QuizModal from '../components/QuizModal';
 import AskAIModal from '../components/AskAIModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -180,6 +181,7 @@ const Dashboard = () => {
                 onAskAI={() => setAskAINote(note)}
                 onAIAction={handleAIAction}
                 aiLoading={aiLoading}
+                onOpenSummary={setAiResult}
               />
             ))}
           </div>
@@ -218,12 +220,17 @@ const Dashboard = () => {
           />
         )}
 
-        {aiResult && (
+        {aiResult && aiResult.type === 'summary' ? (
+          <SummaryResultModal
+            result={aiResult}
+            onClose={() => setAiResult(null)}
+          />
+        ) : aiResult ? (
           <AIResultModal
             result={aiResult}
             onClose={() => setAiResult(null)}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );

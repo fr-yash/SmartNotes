@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { aiAPI } from '../services/api';
 
-const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoading }) => {
+const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoading, onOpenSummary }) => {
   const [actionLoading, setActionLoading] = useState(null);
   const [showMoreActions, setShowMoreActions] = useState(false);
+  const [summary, setSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [fullSummary, setFullSummary] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -17,6 +21,33 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Generate summary on component mount
+  useEffect(() => {
+    const generateSummary = async () => {
+      try {
+        setSummaryLoading(true);
+        const result = await aiAPI.summarize(note.content);
+        setFullSummary(result.summary);
+
+        // Extract just the first section (Detailed Summary) for preview
+        const summaryMatch = result.summary.match(/### 1\) Detailed Summary\n([\s\S]*?)(?=### 2\)|$)/);
+        if (summaryMatch) {
+          setSummary(summaryMatch[1].trim());
+        } else {
+          setSummary(result.summary);
+        }
+      } catch (error) {
+        console.error('Error generating summary:', error);
+        setSummary(null);
+        setFullSummary(null);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    generateSummary();
+  }, [note._id]);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -42,14 +73,26 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
     return content.substring(0, maxLength) + '...';
   };
 
+  const handleCardClick = (e) => {
+    // Don't open summary if clicking on buttons or dropdown
+    if (e.target.closest('button') || e.target.closest('[role="button"]')) {
+      return;
+    }
+
+    // Open summary modal if we have the full summary
+    if (fullSummary && onOpenSummary) {
+      onOpenSummary({
+        title: `Summary of "${note.title}"`,
+        content: fullSummary,
+        type: 'summary'
+      });
+    }
+  };
+
   return (
-    <div className="bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 relative"
-      onClick={(e) => {
-        // Close dropdown if clicking outside
-        if (showMoreActions) {
-          setShowMoreActions(false);
-        }
-      }}
+    <div
+      className="bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 relative cursor-pointer"
+      onClick={handleCardClick}
     >
 
       {/* Note Header */}
@@ -59,16 +102,6 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
         </h3>
         {/* Quick Actions - Always visible */}
         <div className="flex space-x-1">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            className="p-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-            title="Edit"
-          >
-            ✏️
-          </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -148,11 +181,27 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
         </div>
       </div>
 
-      {/* Note Content */}
+      {/* Note Content - Show Summary */}
       <div className="mb-4">
-        <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-          {truncateContent(note.content)}
-        </p>
+        {summaryLoading ? (
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-400"></div>
+            <p className="text-gray-400 text-sm italic">Generating summary...</p>
+          </div>
+        ) : summary ? (
+          <p className="text-gray-300 text-sm leading-relaxed">
+            {truncateContent(summary, 200)}
+          </p>
+        ) : (
+          <p className="text-gray-400 text-sm italic">
+            Summary unavailable. Original content:
+          </p>
+        )}
+        {!summaryLoading && !summary && (
+          <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap mt-2">
+            {truncateContent(note.content, 150)}
+          </p>
+        )}
       </div>
 
       {/* Note Footer */}

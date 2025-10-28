@@ -6,7 +6,7 @@ const apiKey = process.env.GEMINI_API_KEY;
 const modelName = process.env.GENAI_MODEL || "gemini-1.5-flash";
 const genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
-// Summarize Note
+// Summarize Note with Comprehensive Structure
 export const summarizeNote = async (req, res) => {
   try {
     if (!genAI) return res.status(500).json({ message: "AI not configured: set GEMINI_API_KEY in backend environment." });
@@ -14,7 +14,54 @@ export const summarizeNote = async (req, res) => {
     if (!content) return res.status(400).json({ message: "Content is required" });
 
     const model = genAI.getGenerativeModel({ model: modelName });
-    const result = await model.generateContent(`Summarize this note:\n\n${content}`);
+
+    const prompt = `You are an expert study assistant. Read the user's note and produce a high-quality, structured output. Follow these rules strictly:
+
+--- INPUT NOTE START ---
+${content}
+--- INPUT NOTE END ---
+
+TASK 1 — DETAILED SUMMARY
+Write a long, well-structured summary of the note. Preserve all key points, facts, definitions, numbers, and logic. Do not shorten too much — it should feel like the same information rewritten more clearly and cohesively.
+
+TASK 2 — EXPLAIN LIKE A TEACHER
+Explain the same content in a simple and teachable way using easy language. Assume the user has no prior knowledge. Use analogies/examples where required.
+
+TASK 3 — ADD STUDY NOTES FORMAT
+Convert the content into concise exam-ready notes using:
+- Bullet points
+- Headings & subheadings
+- Important keywords in **bold**
+- Step-by-step breakdown where needed
+
+TASK 4 — POSSIBLE QUESTIONS
+Generate 5–10 exam or viva-style questions based on the note.
+Types:
+- Conceptual questions
+- Why/How type questions
+- Short answers & 2–5 mark type questions
+
+TASK 5 — OUTPUT FORMAT
+Return the final answer in the following structured format:
+
+### 1) Detailed Summary
+...
+
+### 2) Teacher Explanation (Simple Language)
+...
+
+### 3) Study Notes (Clean / Bullet Points)
+...
+
+### 4) Possible Questions
+1.
+2.
+3.
+...
+
+Do not add anything else outside this structure.`;
+
+    const result = await model.generateContent(prompt);
 
     res.json({ summary: result.response.text() });
   } catch (error) {
@@ -95,7 +142,7 @@ export const generateQuiz = async (req, res) => {
       return null;
     };
 
-    // Attempt direct parse
+    // Attempt direct parse  
     let quiz = tryParse(text);
 
     // Try to extract JSON from code fences

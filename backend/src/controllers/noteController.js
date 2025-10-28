@@ -12,7 +12,7 @@ export const createNote = async (req, res) => {
   }
 };
 
-// Get All Notes (only logged-in user’s notes)
+// Get All Notes (only logged-in user’s notes)a
 export const getNotes = async (req, res) => {
   try {
     const notes = await Note.find({

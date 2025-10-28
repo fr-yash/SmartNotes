@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { pdfAPI, aiAPI } from '../services/api';
 import AIResultModal from '../components/AIResultModal';
+import SummaryResultModal from '../components/SummaryResultModal';
 
 const UploadPDF = () => {
   const [file, setFile] = useState(null);
@@ -247,12 +248,17 @@ const UploadPDF = () => {
         )}
 
         {/* AI Result Modal */}
-        {aiResult && (
+        {aiResult && aiResult.type === 'summary' ? (
+          <SummaryResultModal
+            result={aiResult}
+            onClose={() => setAiResult(null)}
+          />
+        ) : aiResult ? (
           <AIResultModal
             result={aiResult}
             onClose={() => setAiResult(null)}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );
