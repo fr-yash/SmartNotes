@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://smartnotes-backend-jt93.onrender.com';
+const API_BASE_URL = 'https://smartnotes-backend-jt93.onrender.com/api';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
