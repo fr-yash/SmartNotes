@@ -2,10 +2,10 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import authRoutes from "./routes/authRoutes.js";
-import noteRoutes from "./routes/noteRoutes.js";
-import aiRoutes from "./routes/aiRoutes.js";
-import pdfRoutes from "./routes/pdfRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import noteRoutes from "./src/routes/noteRoutes.js";
+import aiRoutes from "./src/routes/aiRoutes.js";
+import pdfRoutes from "./src/routes/pdfRoutes.js";
 
 dotenv.config();
 dotenv.config({ quiet: true });
