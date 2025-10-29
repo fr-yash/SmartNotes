@@ -86,6 +86,14 @@ export const aiAPI = {
     return handleResponse(response);
   },
 
+  getNoteSummary: async (noteId) => {
+    const response = await fetch(`${API_BASE_URL}/ai/note-summary/${noteId}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
   extractKeywords: async (content) => {
     const response = await fetch(`${API_BASE_URL}/ai/keywords`, {
       method: 'POST',

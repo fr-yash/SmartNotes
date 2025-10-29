@@ -22,12 +22,13 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
     };
   }, []);
 
-  // Generate summary on component mount
+  // Get or generate summary on component mount
   useEffect(() => {
-    const generateSummary = async () => {
+    const getSummary = async () => {
       try {
         setSummaryLoading(true);
-        const result = await aiAPI.summarize(note.content);
+        // Use the new endpoint that caches summaries in the database
+        const result = await aiAPI.getNoteSummary(note._id);
         setFullSummary(result.summary);
 
         // Extract just the first section (Detailed Summary) for preview
@@ -38,7 +39,7 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
           setSummary(result.summary);
         }
       } catch (error) {
-        console.error('Error generating summary:', error);
+        console.error('Error getting summary:', error);
         setSummary(null);
         setFullSummary(null);
       } finally {
@@ -46,7 +47,7 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
       }
     };
 
-    generateSummary();
+    getSummary();
   }, [note._id]);
 
   const formatDate = (dateString) => {
