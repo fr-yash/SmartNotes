@@ -1,4 +1,20 @@
-const API_BASE_URL = 'https://smartnotes-backend-jt93.onrender.com/api';
+// Determine API URL based on environment
+const getAPIBaseURL = () => {
+  // If VITE_API_URL is explicitly set, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // In production, use relative path (same domain)
+  if (import.meta.env.PROD) {
+    return '/api';
+  }
+
+  // In development, use localhost
+  return 'http://localhost:5000/api';
+};
+
+const API_BASE_URL = getAPIBaseURL();
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {

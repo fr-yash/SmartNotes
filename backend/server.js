@@ -13,10 +13,16 @@ dotenv.config({ quiet: true });
 
 const app = express();
 
-
+// CORS configuration for both development and production
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
 
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
 
 // sample route
 app.get("/", (req, res) => {
