@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 import authRoutes from "./src/routes/authRoutes.js";
 import noteRoutes from "./src/routes/noteRoutes.js";
 import aiRoutes from "./src/routes/aiRoutes.js";
@@ -27,6 +28,21 @@ app.use(cors(corsOptions));
 // sample route
 app.get("/", (req, res) => {
   res.send("Smart Notes API running...");
+});
+
+// Debug route to verify token
+app.get("/api/debug/token", (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.json({ message: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ decoded, message: "Token is valid" });
+  } catch (error) {
+    res.json({ error: error.message });
+  }
 });
 
 app.use("/api/auth", authRoutes);

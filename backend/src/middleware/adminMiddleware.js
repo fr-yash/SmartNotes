@@ -10,7 +10,11 @@ export const adminMiddleware = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId);
+    console.log("🔍 Admin Middleware - Decoded token:", decoded);
+
+    const user = await User.findById(decoded.id);
+    console.log("🔍 Admin Middleware - User found:", user ? `${user.name} (${user.email})` : "NOT FOUND");
+    console.log("🔍 Admin Middleware - User role:", user?.role);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -23,6 +27,7 @@ export const adminMiddleware = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error("❌ Admin Middleware Error:", error.message);
     res.status(401).json({ message: "Invalid token" });
   }
 };
@@ -36,7 +41,7 @@ export const checkUserActive = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId);
+    const user = await User.findById(decoded.id);
 
     if (!user || !user.isActive) {
       return res.status(403).json({ message: "User account is suspended or inactive" });
