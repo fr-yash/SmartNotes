@@ -9,7 +9,6 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
   const [analytics, setAnalytics] = useState(null);
   const [users, setUsers] = useState([]);
-  const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -35,9 +34,6 @@ const AdminDashboard = () => {
         } else if (activeTab === 'users') {
           const data = await adminAPI.getAllUsers();
           setUsers(data);
-        } else if (activeTab === 'templates') {
-          const data = await adminAPI.getFeaturedTemplates();
-          setTemplates(data);
         }
       } catch (err) {
         setError(err.message);
@@ -119,7 +115,7 @@ const AdminDashboard = () => {
 
         {/* Tabs */}
         <div className="flex gap-4 mb-8 border-b border-gray-200">
-          {['analytics', 'users', 'templates'].map((tab) => (
+          {['analytics', 'users'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -249,20 +245,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Templates Tab */}
-            {activeTab === 'templates' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {templates.map((template) => (
-                  <div key={template.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.title}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{template.description}</p>
-                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                      {template.category}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+
           </>
         )}
       </div>

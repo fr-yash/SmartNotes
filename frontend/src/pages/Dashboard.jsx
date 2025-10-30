@@ -113,8 +113,8 @@ const Dashboard = () => {
     }
   };
 
-  const handleGenerateQuiz = async (content) => {
-    return await aiAPI.generateQuiz(content);
+  const handleGenerateQuiz = async (content, numQuestions = 5) => {
+    return await aiAPI.generateQuiz(content, numQuestions);
   };
 
   const handleAskAI = async (content, question) => {

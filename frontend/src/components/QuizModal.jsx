@@ -7,15 +7,13 @@ const QuizModal = ({ note, onClose, onGenerateQuiz, loading }) => {
   const [showResults, setShowResults] = useState(false);
   const [score, setScore] = useState(0);
   const [quizLoading, setQuizLoading] = useState(false);
+  const [numQuestions, setNumQuestions] = useState(5);
+  const [quizStarted, setQuizStarted] = useState(false);
 
-  useEffect(() => {
-    generateQuiz();
-  }, []);
-
-  const generateQuiz = async () => {
+  const generateQuiz = async (questionCount = numQuestions) => {
     setQuizLoading(true);
     try {
-      const result = await onGenerateQuiz(note.content);
+      const result = await onGenerateQuiz(note.content, questionCount);
 
       // Handle different response formats
       let questions = null;
@@ -29,6 +27,7 @@ const QuizModal = ({ note, onClose, onGenerateQuiz, loading }) => {
 
       setQuiz(questions);
       setUserAnswers(new Array(questions.length).fill(null));
+      setQuizStarted(true);
     } catch (error) {
       console.error('Error generating quiz:', error);
       setQuiz(null);
@@ -88,6 +87,51 @@ const QuizModal = ({ note, onClose, onGenerateQuiz, loading }) => {
     );
   }
 
+  // Show question count selector before quiz starts
+  if (!quizStarted) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="relative top-20 mx-auto p-5 border border-gray-600 w-full max-w-2xl bg-gray-800 rounded-lg shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-white">Generate Quiz</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-200 text-2xl font-bold">×</button>
+          </div>
+          <div className="text-center py-8">
+            <p className="text-gray-300 mb-6">How many questions would you like?</p>
+            <div className="flex justify-center mb-6">
+              <select
+                value={numQuestions}
+                onChange={(e) => setNumQuestions(parseInt(e.target.value))}
+                className="px-4 py-2 bg-gray-700 text-white rounded-md border border-gray-600 focus:outline-none focus:border-indigo-500"
+              >
+                {[3, 4, 5, 6, 7, 8, 9, 10, 12, 15].map((num) => (
+                  <option key={num} value={num}>
+                    {num} Questions
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={() => generateQuiz(numQuestions)}
+                disabled={quizLoading}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {quizLoading ? 'Generating...' : 'Generate Quiz'}
+              </button>
+              <button
+                onClick={onClose}
+                className="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!quiz) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -100,7 +144,9 @@ const QuizModal = ({ note, onClose, onGenerateQuiz, loading }) => {
             <p className="text-gray-300 mb-4">Failed to generate quiz questions. Please try again.</p>
             <div className="flex justify-center space-x-3">
               <button
-                onClick={generateQuiz}
+                onClick={() => {
+                  setQuizStarted(false);
+                }}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
               >
                 Try Again
