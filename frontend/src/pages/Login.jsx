@@ -57,7 +57,11 @@ const Login = () => {
       // Check if account is suspended
       if (response.message && response.message.includes('suspended')) {
         setErrors({ submit: response.message });
-        // Store email for appeal page
+        // Store token and user for appeal page
+        if (response.token) {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('user', JSON.stringify(response.user));
+        }
         localStorage.setItem('suspendedEmail', formData.email);
         // Redirect to suspension appeal page after a short delay
         setTimeout(() => navigate('/suspended'), 1500);
@@ -69,7 +73,7 @@ const Login = () => {
     } catch (error) {
       const errorMsg = error.message || 'Login failed';
 
-      // Check if it's a suspension error
+      // Check if it's a suspension error (403 status)
       if (errorMsg.includes('suspended')) {
         setErrors({ submit: errorMsg });
         localStorage.setItem('suspendedEmail', formData.email);

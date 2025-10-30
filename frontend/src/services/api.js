@@ -51,7 +51,19 @@ export const authAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials)
     });
-    return handleResponse(response);
+
+    const data = await response.json();
+
+    // For 403 suspension errors, return the data (which includes token for appeal)
+    if (response.status === 403 && data.message && data.message.includes('suspended')) {
+      return data;
+    }
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Login failed');
+    }
+
+    return data;
   }
 };
 
