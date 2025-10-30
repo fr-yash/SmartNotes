@@ -249,14 +249,14 @@ export const adminAPI = {
   },
 
   getSuspensionRequests: async () => {
-    const response = await fetch(`${API_BASE_URL}/admin/suspension-requests`, {
+    const response = await fetch(`${API_BASE_URL}/suspension-requests`, {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
 
   approveSuspensionRequest: async (requestId, response) => {
-    const res = await fetch(`${API_BASE_URL}/admin/suspension-requests/${requestId}/approve`, {
+    const res = await fetch(`${API_BASE_URL}/suspension-requests/${requestId}/approve`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify({ response })
@@ -265,7 +265,7 @@ export const adminAPI = {
   },
 
   rejectSuspensionRequest: async (requestId, response) => {
-    const res = await fetch(`${API_BASE_URL}/admin/suspension-requests/${requestId}/reject`, {
+    const res = await fetch(`${API_BASE_URL}/suspension-requests/${requestId}/reject`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify({ response })
