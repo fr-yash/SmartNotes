@@ -133,18 +133,18 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Notes</h1>
-            <p className="mt-2 text-gray-600">
+            <h1 className="text-4xl font-bold text-gray-900">My Notes</h1>
+            <p className="mt-2 text-gray-500">
               {notes.length} {notes.length === 1 ? 'note' : 'notes'} total
             </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow-md text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
           >
             <span className="mr-2">➕</span>
             Create Note
@@ -152,8 +152,8 @@ const Dashboard = () => {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-md bg-red-50 p-4">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-6 rounded-lg bg-red-50 p-4 border border-red-200">
+            <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
 

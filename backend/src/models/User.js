@@ -15,6 +15,27 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
+  aiRequestsToday: {
+    type: Number,
+    default: 0
+  },
+  aiRequestsLimit: {
+    type: Number,
+    default: 100
+  },
+  lastAIRequestReset: {
+    type: Date,
+    default: Date.now
   }
 }, { timestamps: true });
 

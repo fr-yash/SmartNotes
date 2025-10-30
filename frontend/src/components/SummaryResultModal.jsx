@@ -50,7 +50,7 @@ const SummaryResultModal = ({ result, onClose }) => {
       // Handle headings (##, ###, etc.)
       if (trimmedLine.startsWith('##')) {
         return (
-          <h3 key={idx} className="text-lg font-bold text-white mt-4 mb-2">
+          <h3 key={idx} className="text-lg font-bold text-gray-900 mt-4 mb-2">
             {trimmedLine.replace(/^#+\s*/, '')}
           </h3>
         );
@@ -61,8 +61,8 @@ const SummaryResultModal = ({ result, onClose }) => {
         const content = trimmedLine.replace(/^[-*]\s*/, '');
         return (
           <div key={idx} className="flex gap-3 mb-2 ml-2">
-            <span className="text-indigo-400 font-bold">•</span>
-            <span className="text-gray-200">{renderInlineFormatting(content)}</span>
+            <span className="text-blue-500 font-bold">•</span>
+            <span className="text-gray-700">{renderInlineFormatting(content)}</span>
           </div>
         );
       }
@@ -71,7 +71,7 @@ const SummaryResultModal = ({ result, onClose }) => {
       if (trimmedLine.match(/^\d+\.\s/)) {
         const content = trimmedLine.replace(/^\d+\.\s*/, '');
         return (
-          <p key={idx} className="text-gray-200 mb-2 ml-2">
+          <p key={idx} className="text-gray-700 mb-2 ml-2">
             {renderInlineFormatting(trimmedLine)}
           </p>
         );
@@ -80,7 +80,7 @@ const SummaryResultModal = ({ result, onClose }) => {
       // Handle bold text (standalone lines with **)
       if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
         return (
-          <p key={idx} className="text-indigo-300 font-semibold mb-3 mt-2">
+          <p key={idx} className="text-blue-600 font-semibold mb-3 mt-2">
             {trimmedLine.replace(/\*\*/g, '')}
           </p>
         );
@@ -88,7 +88,7 @@ const SummaryResultModal = ({ result, onClose }) => {
 
       // Regular paragraph with inline formatting
       return (
-        <p key={idx} className="text-gray-200 mb-2 leading-relaxed">
+        <p key={idx} className="text-gray-700 mb-2 leading-relaxed">
           {renderInlineFormatting(trimmedLine)}
         </p>
       );
@@ -101,7 +101,7 @@ const SummaryResultModal = ({ result, onClose }) => {
     return parts.map((part, idx) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         return (
-          <strong key={idx} className="text-indigo-300 font-semibold">
+          <strong key={idx} className="text-blue-600 font-semibold">
             {part.replace(/\*\*/g, '')}
           </strong>
         );
@@ -118,35 +118,35 @@ const SummaryResultModal = ({ result, onClose }) => {
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-10 mx-auto p-6 border border-gray-600 w-full max-w-4xl bg-gray-800 rounded-lg shadow-lg mb-10">
+    <div className="fixed inset-0 bg-black bg-opacity-30 overflow-y-auto h-full w-full z-50 backdrop-blur-sm">
+      <div className="relative top-10 mx-auto p-6 border border-gray-200 w-full max-w-4xl bg-white rounded-2xl shadow-xl mb-10">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">
             <span className="text-3xl mr-3">📖</span>
             <div>
-              <h3 className="text-2xl font-bold text-white">Comprehensive Summary</h3>
-              <p className="text-sm text-gray-400 mt-1">Detailed Summary • Teacher Explanation • Study Notes • Questions</p>
+              <h3 className="text-2xl font-bold text-gray-900">Comprehensive Summary</h3>
+              <p className="text-sm text-gray-500 mt-1">Detailed Summary • Teacher Explanation • Study Notes • Questions</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-200 text-3xl font-bold"
+            className="text-gray-400 hover:text-gray-600 text-3xl font-bold transition-colors"
           >
             ×
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b border-gray-600 overflow-x-auto">
+        <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.id
-                  ? 'text-indigo-400 border-b-2 border-indigo-400'
-                  : 'text-gray-400 hover:text-gray-300'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               {tab.label}
@@ -155,29 +155,29 @@ const SummaryResultModal = ({ result, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="bg-gray-700 rounded-lg p-6 border border-gray-600 mb-6 max-h-96 overflow-y-auto">
+        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 mb-6 max-h-96 overflow-y-auto">
           <div className="flex justify-between items-start mb-4">
-            <span className="text-sm font-medium text-gray-300">
+            <span className="text-sm font-medium text-gray-700">
               {tabs.find(t => t.id === activeTab)?.label}
             </span>
             <button
               onClick={handleCopy}
-              className={`text-sm px-3 py-1 rounded-md transition-colors ${
+              className={`text-sm px-3 py-1 rounded-lg transition-colors ${
                 copied
-                  ? 'bg-green-800 text-green-200'
-                  : 'bg-gray-600 text-gray-200 hover:bg-gray-500'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               {copied ? '✓ Copied!' : '📋 Copy'}
             </button>
           </div>
-          <div className="text-gray-200 leading-relaxed">
+          <div className="text-gray-700 leading-relaxed">
             {sections[activeTab] ? (
               <div className="space-y-2">
                 {renderContent(sections[activeTab])}
               </div>
             ) : (
-              <p className="text-gray-400 italic">No content available for this section.</p>
+              <p className="text-gray-500 italic">No content available for this section.</p>
             )}
           </div>
         </div>
@@ -186,13 +186,13 @@ const SummaryResultModal = ({ result, onClose }) => {
         <div className="flex justify-end gap-3">
           <button
             onClick={handleCopy}
-            className="px-4 py-2 text-sm font-medium text-white bg-gray-600 hover:bg-gray-500 rounded-md transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
           >
             📋 Copy All
           </button>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 rounded-lg transition-colors"
           >
             Close
           </button>

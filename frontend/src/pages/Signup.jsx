@@ -78,26 +78,48 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-white">
-            Create your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-300">
-            Or{' '}
-            <Link
-              to="/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              sign in to your existing account
-            </Link>
+    <div className="min-h-screen flex bg-white">
+      {/* Left Side - Illustration & Tagline */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex-col justify-center items-center p-12">
+        <div className="text-center max-w-md">
+          <div className="text-6xl mb-6">🚀</div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Get Started</h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Join thousands of students using Smart Notes to ace their exams and master new concepts.
           </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            <div className="flex items-center text-gray-700">
+              <span className="text-2xl mr-3">📝</span>
+              <span>Create Smart Notes</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <span className="text-2xl mr-3">🎯</span>
+              <span>Get AI Insights</span>
+            </div>
+            <div className="flex items-center text-gray-700">
+              <span className="text-2xl mr-3">🏆</span>
+              <span>Ace Your Exams</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Side - Signup Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-4 sm:px-6 lg:px-12 py-12">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Create Account
+            </h2>
+            <p className="text-gray-600">
+              Join Smart Notes and start learning smarter
+            </p>
+          </div>
+
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name
               </label>
               <input
@@ -105,20 +127,21 @@ const Signup = () => {
                 name="name"
                 type="text"
                 autoComplete="name"
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.name ? 'border-red-500' : 'border-gray-600'
-                } placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Enter your full name"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                  errors.name ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="John Doe"
                 value={formData.name}
                 onChange={handleChange}
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.name}</p>
               )}
             </div>
 
+            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
               <input
@@ -126,20 +149,21 @@ const Signup = () => {
                 name="email"
                 type="email"
                 autoComplete="email"
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.email ? 'border-red-500' : 'border-gray-600'
-                } placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Enter your email"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                  errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleChange}
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
 
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
@@ -147,20 +171,21 @@ const Signup = () => {
                 name="password"
                 type="password"
                 autoComplete="new-password"
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.password ? 'border-red-500' : 'border-gray-600'
-                } placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Create a password"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                  errors.password ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
 
+            {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                 Confirm Password
               </label>
               <input
@@ -168,35 +193,46 @@ const Signup = () => {
                 name="confirmPassword"
                 type="password"
                 autoComplete="new-password"
-                className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
-                  errors.confirmPassword ? 'border-red-500' : 'border-gray-600'
-                } placeholder-gray-400 text-white bg-gray-800 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                placeholder="Confirm your password"
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all ${
+                  errors.confirmPassword ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                }`}
+                placeholder="••••••••"
                 value={formData.confirmPassword}
                 onChange={handleChange}
               />
               {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>
               )}
             </div>
-          </div>
 
-          {errors.submit && (
-            <div className="rounded-md bg-red-900 p-4">
-              <p className="text-sm text-red-200">{errors.submit}</p>
-            </div>
-          )}
+            {/* Error Message */}
+            {errors.submit && (
+              <div className="rounded-lg bg-red-50 p-4 border border-red-200">
+                <p className="text-sm text-red-700">{errors.submit}</p>
+              </div>
+            )}
 
-          <div>
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium rounded-lg hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? 'Creating account...' : 'Create Account'}
             </button>
-          </div>
-        </form>
+          </form>
+
+          {/* Sign In Link */}
+          <p className="mt-6 text-center text-gray-600">
+            Already have an account?{' '}
+            <Link
+              to="/login"
+              className="font-medium text-green-600 hover:text-green-700 transition-colors"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

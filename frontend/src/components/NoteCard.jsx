@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { aiAPI } from '../services/api';
+import { exportService } from '../services/exportService';
 
 const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoading, onOpenSummary }) => {
   const [actionLoading, setActionLoading] = useState(null);
@@ -7,6 +8,7 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [fullSummary, setFullSummary] = useState(null);
+  const [exportLoading, setExportLoading] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -74,6 +76,32 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
     return content.substring(0, maxLength) + '...';
   };
 
+  const handleExportPDF = async (e) => {
+    e.stopPropagation();
+    try {
+      setExportLoading('pdf');
+      await exportService.exportToPDF(note, fullSummary);
+    } catch (error) {
+      console.error('Export to PDF failed:', error);
+      alert('Failed to export PDF');
+    } finally {
+      setExportLoading(null);
+    }
+  };
+
+  const handleExportWord = async (e) => {
+    e.stopPropagation();
+    try {
+      setExportLoading('word');
+      await exportService.exportToWord(note, fullSummary);
+    } catch (error) {
+      console.error('Export to Word failed:', error);
+      alert('Failed to export Word document');
+    } finally {
+      setExportLoading(null);
+    }
+  };
+
   const handleCardClick = (e) => {
     // Don't open summary if clicking on buttons or dropdown
     if (e.target.closest('button') || e.target.closest('[role="button"]')) {
@@ -92,23 +120,23 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
 
   return (
     <div
-      className="bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 p-6 relative cursor-pointer"
+      className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 p-6 relative cursor-pointer border border-gray-100"
       onClick={handleCardClick}
     >
 
       {/* Note Header */}
       <div className="flex justify-between items-start mb-3">
-        <h3 className="text-lg font-semibold text-white truncate pr-2">
+        <h3 className="text-lg font-semibold text-gray-900 truncate pr-2">
           {note.title}
         </h3>
         {/* Quick Actions - Always visible */}
-        <div className="flex space-x-1">
+        <div className="flex space-x-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onQuiz();
             }}
-            className="p-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700 transition-colors"
+            className="p-2 bg-yellow-100 text-yellow-700 text-sm rounded-lg hover:bg-yellow-200 transition-colors"
             title="Quiz"
           >
             🧠
@@ -118,7 +146,7 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
               e.stopPropagation();
               onAskAI();
             }}
-            className="p-1 bg-cyan-600 text-white text-xs rounded hover:bg-cyan-700 transition-colors"
+            className="p-2 bg-cyan-100 text-cyan-700 text-sm rounded-lg hover:bg-cyan-200 transition-colors"
             title="Ask AI"
           >
             🤖
@@ -135,14 +163,14 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
               ⋯
             </button>
             {showMoreActions && (
-              <div className="absolute right-0 top-8 bg-gray-700 rounded-md shadow-lg z-30 min-w-32 border border-gray-600">
+              <div className="absolute right-0 top-10 bg-white rounded-lg shadow-lg z-30 min-w-40 border border-gray-200">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAIAction('summarize');
                     setShowMoreActions(false);
                   }}
-                  className="block w-full text-left px-3 py-2 text-xs text-white hover:bg-gray-600 rounded-t-md"
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-t-lg transition-colors"
                 >
                   📝 Summarize
                 </button>
@@ -152,7 +180,7 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
                     handleAIAction('keywords');
                     setShowMoreActions(false);
                   }}
-                  className="block w-full text-left px-3 py-2 text-xs text-white hover:bg-gray-600"
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                 >
                   🏷️ Keywords
                 </button>
@@ -162,17 +190,33 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
                     handleAIAction('rewrite');
                     setShowMoreActions(false);
                   }}
-                  className="block w-full text-left px-3 py-2 text-xs text-white hover:bg-gray-600"
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                 >
                   ✨ Rewrite
                 </button>
+                <div className="border-t border-gray-200"></div>
+                <button
+                  onClick={handleExportPDF}
+                  disabled={exportLoading === 'pdf'}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors disabled:opacity-50"
+                >
+                  {exportLoading === 'pdf' ? '⏳ Exporting...' : '📄 Export as PDF'}
+                </button>
+                <button
+                  onClick={handleExportWord}
+                  disabled={exportLoading === 'word'}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors disabled:opacity-50"
+                >
+                  {exportLoading === 'word' ? '⏳ Exporting...' : '📋 Export as Word'}
+                </button>
+                <div className="border-t border-gray-200"></div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete();
                     setShowMoreActions(false);
                   }}
-                  className="block w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-red-900 rounded-b-md"
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors"
                 >
                   🗑️ Delete
                 </button>
@@ -186,27 +230,27 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
       <div className="mb-4">
         {summaryLoading ? (
           <div className="flex items-center space-x-2">
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-indigo-400"></div>
-            <p className="text-gray-400 text-sm italic">Generating summary...</p>
+            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+            <p className="text-gray-500 text-sm italic">Generating summary...</p>
           </div>
         ) : summary ? (
-          <p className="text-gray-300 text-sm leading-relaxed">
+          <p className="text-gray-600 text-sm leading-relaxed">
             {truncateContent(summary, 200)}
           </p>
         ) : (
-          <p className="text-gray-400 text-sm italic">
+          <p className="text-gray-500 text-sm italic">
             Summary unavailable. Original content:
           </p>
         )}
         {!summaryLoading && !summary && (
-          <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap mt-2">
+          <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap mt-2">
             {truncateContent(note.content, 150)}
           </p>
         )}
       </div>
 
       {/* Note Footer */}
-      <div className="flex justify-between items-center text-xs text-gray-400">
+      <div className="flex justify-between items-center text-xs text-gray-500">
         <span>Created {formatDate(note.createdAt)}</span>
         {note.updatedAt !== note.createdAt && (
           <span>Updated {formatDate(note.updatedAt)}</span>

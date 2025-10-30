@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import UploadPDF from './pages/UploadPDF';
+import AdminDashboard from './pages/AdminDashboard';
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
@@ -40,6 +41,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/"
           element={<Navigate to="/dashboard" replace />}
         />
@@ -57,7 +66,7 @@ function App() {
     <ErrorBoundary>
       <Router>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-900">
+          <div className="min-h-screen bg-white">
             <AppRoutes />
           </div>
         </AuthProvider>

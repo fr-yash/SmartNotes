@@ -148,3 +148,75 @@ export const pdfAPI = {
     return handleResponse(response);
   }
 };
+
+// Admin API
+export const adminAPI = {
+  getAllUsers: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/users`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getUserById: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  toggleUserStatus: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/toggle-status`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  deleteUser: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  updateAILimit: async (userId, limit) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/ai-limit`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ aiRequestsLimit: limit })
+    });
+    return handleResponse(response);
+  },
+
+  getAnalytics: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/analytics`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  getFeaturedTemplates: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/templates`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  promoteToAdmin: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/promote`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  demoteToUser: async (userId) => {
+    const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/demote`, {
+      method: 'PATCH',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  }
+};
