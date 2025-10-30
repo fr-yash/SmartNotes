@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { aiAPI } from '../services/api';
-import { exportService } from '../services/exportService';
 
 const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoading, onOpenSummary }) => {
   const [actionLoading, setActionLoading] = useState(null);
@@ -8,7 +7,6 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
   const [summary, setSummary] = useState(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [fullSummary, setFullSummary] = useState(null);
-  const [exportLoading, setExportLoading] = useState(null);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -76,31 +74,7 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
     return content.substring(0, maxLength) + '...';
   };
 
-  const handleExportPDF = async (e) => {
-    e.stopPropagation();
-    try {
-      setExportLoading('pdf');
-      await exportService.exportToPDF(note, fullSummary);
-    } catch (error) {
-      console.error('Export to PDF failed:', error);
-      alert('Failed to export PDF');
-    } finally {
-      setExportLoading(null);
-    }
-  };
 
-  const handleExportWord = async (e) => {
-    e.stopPropagation();
-    try {
-      setExportLoading('word');
-      await exportService.exportToWord(note, fullSummary);
-    } catch (error) {
-      console.error('Export to Word failed:', error);
-      alert('Failed to export Word document');
-    } finally {
-      setExportLoading(null);
-    }
-  };
 
   const handleCardClick = (e) => {
     // Don't open summary if clicking on buttons or dropdown
@@ -193,21 +167,6 @@ const NoteCard = ({ note, onEdit, onDelete, onAIAction, onQuiz, onAskAI, aiLoadi
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
                 >
                   ✨ Rewrite
-                </button>
-                <div className="border-t border-gray-200"></div>
-                <button
-                  onClick={handleExportPDF}
-                  disabled={exportLoading === 'pdf'}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors disabled:opacity-50"
-                >
-                  {exportLoading === 'pdf' ? '⏳ Exporting...' : '📄 Export as PDF'}
-                </button>
-                <button
-                  onClick={handleExportWord}
-                  disabled={exportLoading === 'word'}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors disabled:opacity-50"
-                >
-                  {exportLoading === 'word' ? '⏳ Exporting...' : '📋 Export as Word'}
                 </button>
                 <div className="border-t border-gray-200"></div>
                 <button
