@@ -234,5 +234,49 @@ export const adminAPI = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  getSuspensionRequests: async () => {
+    const response = await fetch(`${API_BASE_URL}/admin/suspension-requests`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  approveSuspensionRequest: async (requestId, response) => {
+    const res = await fetch(`${API_BASE_URL}/admin/suspension-requests/${requestId}/approve`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ response })
+    });
+    return handleResponse(res);
+  },
+
+  rejectSuspensionRequest: async (requestId, response) => {
+    const res = await fetch(`${API_BASE_URL}/admin/suspension-requests/${requestId}/reject`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ response })
+    });
+    return handleResponse(res);
+  }
+};
+
+// Suspension Request API (for suspended users)
+export const suspensionAPI = {
+  submitRequest: async (reason) => {
+    const response = await fetch(`${API_BASE_URL}/suspension-requests/submit`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ reason })
+    });
+    return handleResponse(response);
+  },
+
+  getUserRequests: async () => {
+    const response = await fetch(`${API_BASE_URL}/suspension-requests/my-requests`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };

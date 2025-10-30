@@ -8,6 +8,7 @@ import noteRoutes from "./src/routes/noteRoutes.js";
 import aiRoutes from "./src/routes/aiRoutes.js";
 import pdfRoutes from "./src/routes/pdfRoutes.js";
 import adminRoutes from "./src/routes/adminRoutes.js";
+import suspensionRequestRoutes from "./src/routes/suspensionRequestRoutes.js";
 
 dotenv.config();
 dotenv.config({ quiet: true });
@@ -50,6 +51,7 @@ app.use("/api/notes", noteRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/pdf", pdfRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/suspension-requests", suspensionRequestRoutes);
 
 // DB connection
 mongoose.connect(process.env.MONGO_URI)

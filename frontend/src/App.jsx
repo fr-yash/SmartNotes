@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import UploadPDF from './pages/UploadPDF';
 import AdminDashboard from './pages/AdminDashboard';
+import SuspensionAppeal from './pages/SuspensionAppeal';
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
@@ -47,6 +48,10 @@ function AppRoutes() {
               <AdminDashboard />
             </ProtectedRoute>
           }
+        />
+        <Route
+          path="/suspended"
+          element={<SuspensionAppeal />}
         />
         <Route
           path="/"

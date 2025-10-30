@@ -9,10 +9,12 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
   const [analytics, setAnalytics] = useState(null);
   const [users, setUsers] = useState([]);
+  const [suspensionRequests, setSuspensionRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newLimit, setNewLimit] = useState('');
+  const [responseText, setResponseText] = useState('');
 
   // Check if user is admin
   useEffect(() => {
@@ -34,6 +36,9 @@ const AdminDashboard = () => {
         } else if (activeTab === 'users') {
           const data = await adminAPI.getAllUsers();
           setUsers(data);
+        } else if (activeTab === 'suspension-requests') {
+          const data = await adminAPI.getSuspensionRequests();
+          setSuspensionRequests(data);
         }
       } catch (err) {
         setError(err.message);
@@ -104,6 +109,36 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleApproveSuspensionRequest = async (requestId) => {
+    if (!responseText.trim()) {
+      alert('Please provide a response');
+      return;
+    }
+    try {
+      await adminAPI.approveSuspensionRequest(requestId, responseText);
+      const data = await adminAPI.getSuspensionRequests();
+      setSuspensionRequests(data);
+      setResponseText('');
+    } catch (err) {
+      alert('Error approving request: ' + err.message);
+    }
+  };
+
+  const handleRejectSuspensionRequest = async (requestId) => {
+    if (!responseText.trim()) {
+      alert('Please provide a response');
+      return;
+    }
+    try {
+      await adminAPI.rejectSuspensionRequest(requestId, responseText);
+      const data = await adminAPI.getSuspensionRequests();
+      setSuspensionRequests(data);
+      setResponseText('');
+    } catch (err) {
+      alert('Error rejecting request: ' + err.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -114,18 +149,18 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-gray-200">
-          {['analytics', 'users'].map((tab) => (
+        <div className="flex gap-4 mb-8 border-b border-gray-200 overflow-x-auto">
+          {['analytics', 'users', 'suspension-requests'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium transition-colors capitalize ${
+              className={`px-6 py-3 font-medium transition-colors capitalize whitespace-nowrap ${
                 activeTab === tab
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              {tab}
+              {tab === 'suspension-requests' ? 'Appeals' : tab}
             </button>
           ))}
         </div>
@@ -245,6 +280,75 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {/* Suspension Requests Tab */}
+            {activeTab === 'suspension-requests' && (
+              <div className="space-y-6">
+                {suspensionRequests.length === 0 ? (
+                  <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">
+                    <p className="text-gray-600">No suspension appeals at this time</p>
+                  </div>
+                ) : (
+                  suspensionRequests.map((request) => (
+                    <div key={request._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{request.userName}</h3>
+                          <p className="text-sm text-gray-600">{request.userEmail}</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Submitted: {new Date(request.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          request.status === 'approved' ? 'bg-green-100 text-green-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                        </span>
+                      </div>
+
+                      <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm font-medium text-gray-700 mb-2">User's Appeal:</p>
+                        <p className="text-gray-600 text-sm">{request.reason}</p>
+                      </div>
+
+                      {request.adminResponse && (
+                        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <p className="text-sm font-medium text-blue-900 mb-2">Admin Response:</p>
+                          <p className="text-blue-800 text-sm">{request.adminResponse}</p>
+                        </div>
+                      )}
+
+                      {request.status === 'pending' && (
+                        <div className="space-y-3">
+                          <textarea
+                            value={responseText}
+                            onChange={(e) => setResponseText(e.target.value)}
+                            placeholder="Enter your response..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                            rows="3"
+                          />
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => handleApproveSuspensionRequest(request._id)}
+                              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm font-medium"
+                            >
+                              Approve & Reactivate
+                            </button>
+                            <button
+                              onClick={() => handleRejectSuspensionRequest(request._id)}
+                              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
 
           </>
         )}

@@ -47,16 +47,36 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setLoading(true);
     try {
       const response = await authAPI.login(formData);
+
+      // Check if account is suspended
+      if (response.message && response.message.includes('suspended')) {
+        setErrors({ submit: response.message });
+        // Store email for appeal page
+        localStorage.setItem('suspendedEmail', formData.email);
+        // Redirect to suspension appeal page after a short delay
+        setTimeout(() => navigate('/suspended'), 1500);
+        return;
+      }
+
       login(response.user, response.token);
       navigate('/dashboard');
     } catch (error) {
-      setErrors({ submit: error.message });
+      const errorMsg = error.message || 'Login failed';
+
+      // Check if it's a suspension error
+      if (errorMsg.includes('suspended')) {
+        setErrors({ submit: errorMsg });
+        localStorage.setItem('suspendedEmail', formData.email);
+        setTimeout(() => navigate('/suspended'), 1500);
+      } else {
+        setErrors({ submit: errorMsg });
+      }
     } finally {
       setLoading(false);
     }
