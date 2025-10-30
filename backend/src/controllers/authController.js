@@ -37,6 +37,11 @@ export const login = async (req, res) => {
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
+    // Check if user account is suspended
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Your account has been suspended. Please contact support." });
+    }
+
     const token = generateToken(user._id);
 
     res.json({
