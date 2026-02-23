@@ -1,0 +1,489 @@
+================================================================================
+                    SMARTNOTES - DIAGRAM SPECIFICATIONS
+================================================================================
+
+This document provides detailed specifications for generating UML diagrams
+(Use Case Diagrams and Class Diagrams) for the SmartNotes application.
+
+================================================================================
+                        USE CASE DIAGRAM SPECIFICATION
+================================================================================
+
+ACTORS:
+1. Regular User
+   - Can create, read, update, delete notes
+   - Can use AI features
+   - Can upload PDFs
+   - Can submit suspension appeals
+   - Can view own appeal history
+
+2. Admin User
+   - All Regular User capabilities
+   - Can view all users
+   - Can view system analytics
+   - Can suspend/unsuspend users
+   - Can promote/demote users
+   - Can manage suspension appeals
+   - Can approve/reject appeals
+
+3. System (External)
+   - Google Gemini AI API
+   - MongoDB Database
+
+USE CASES:
+
+USER AUTHENTICATION:
+- UC1: Register/Signup
+  Actor: Regular User
+  Description: User creates account with name, email, password
+  Precondition: User not registered
+  Postcondition: User account created, token generated
+  
+- UC2: Login
+  Actor: Regular User, Admin User
+  Description: User logs in with email and password
+  Precondition: User account exists
+  Postcondition: JWT token generated, user authenticated
+  
+- UC3: Logout
+  Actor: Regular User, Admin User
+  Description: User logs out and clears session
+  Precondition: User logged in
+  Postcondition: Token cleared, user unauthenticated
+
+NOTE MANAGEMENT:
+- UC4: Create Note
+  Actor: Regular User
+  Description: User creates new note with title and content
+  Precondition: User logged in, not suspended
+  Postcondition: Note created and stored in database
+  
+- UC5: View Notes
+  Actor: Regular User
+  Description: User views all their notes and shared notes
+  Precondition: User logged in
+  Postcondition: List of notes displayed
+  
+- UC6: Edit Note
+  Actor: Regular User
+  Description: User edits existing note
+  Precondition: User logged in, owns the note
+  Postcondition: Note updated in database
+  
+- UC7: Delete Note
+  Actor: Regular User
+  Description: User deletes note
+  Precondition: User logged in, owns the note
+  Postcondition: Note removed from database
+  
+- UC8: Share Note
+  Actor: Regular User
+  Description: User shares note with another user
+  Precondition: User logged in, owns the note
+  Postcondition: Note added to recipient's shared notes
+  
+- UC9: View Shared Note
+  Actor: Regular User
+  Description: User views note shared by another user
+  Precondition: User logged in, note shared with user
+  Postcondition: Shared note displayed (read-only)
+
+AI FEATURES:
+- UC10: Summarize Note
+  Actor: Regular User
+  Description: User generates AI summary with 4 parts
+  Precondition: User logged in, not suspended, within rate limit
+  Postcondition: Summary displayed in modal
+  Related: Google Gemini API
+  
+- UC11: Extract Keywords
+  Actor: Regular User
+  Description: User extracts key terms from note
+  Precondition: User logged in, not suspended, within rate limit
+  Postcondition: Keywords displayed
+  Related: Google Gemini API
+  
+- UC12: Rewrite Content
+  Actor: Regular User
+  Description: User rewrites note in different style
+  Precondition: User logged in, not suspended, within rate limit
+  Postcondition: Rewritten content displayed
+  Related: Google Gemini API
+  
+- UC13: Ask AI Question
+  Actor: Regular User
+  Description: User asks AI question about note content
+  Precondition: User logged in, not suspended, within rate limit
+  Postcondition: AI answer displayed
+  Related: Google Gemini API
+  
+- UC14: Generate Quiz
+  Actor: Regular User
+  Description: User generates 5 MCQ questions from note
+  Precondition: User logged in, not suspended, within rate limit
+  Postcondition: Quiz questions displayed with explanations
+  Related: Google Gemini API
+
+PDF MANAGEMENT:
+- UC15: Upload PDF
+  Actor: Regular User
+  Description: User uploads PDF file
+  Precondition: User logged in, not suspended
+  Postcondition: PDF stored and metadata saved
+  
+- UC16: Process PDF with AI
+  Actor: Regular User
+  Description: User applies AI features to PDF content
+  Precondition: User logged in, PDF uploaded, within rate limit
+  Postcondition: AI results displayed
+
+ADMIN OPERATIONS:
+- UC17: View Analytics
+  Actor: Admin User
+  Description: Admin views system analytics
+  Precondition: User logged in as admin
+  Postcondition: Analytics dashboard displayed
+  
+- UC18: View All Users
+  Actor: Admin User
+  Description: Admin views list of all users
+  Precondition: User logged in as admin
+  Postcondition: User list displayed
+  
+- UC19: Suspend User
+  Actor: Admin User
+  Description: Admin suspends user account
+  Precondition: User logged in as admin, target user exists
+  Postcondition: User isActive set to false
+  
+- UC20: Unsuspend User
+  Actor: Admin User
+  Description: Admin reactivates suspended user
+  Precondition: User logged in as admin, user suspended
+  Postcondition: User isActive set to true
+  
+- UC21: Promote to Admin
+  Actor: Admin User
+  Description: Admin promotes regular user to admin
+  Precondition: User logged in as admin, target user exists
+  Postcondition: User role changed to 'admin'
+  
+- UC22: Demote to User
+  Actor: Admin User
+  Description: Admin demotes admin user to regular user
+  Precondition: User logged in as admin, target admin exists
+  Postcondition: User role changed to 'user'
+
+SUSPENSION & APPEALS:
+- UC23: Submit Appeal
+  Actor: Regular User (Suspended)
+  Description: Suspended user submits appeal with reason
+  Precondition: User suspended, has valid token
+  Postcondition: Appeal created with status 'pending'
+  
+- UC24: View Appeal History
+  Actor: Regular User (Suspended)
+  Description: Suspended user views their appeals
+  Precondition: User suspended, logged in
+  Postcondition: Appeal history displayed
+  
+- UC25: Review Appeals
+  Actor: Admin User
+  Description: Admin views all pending appeals
+  Precondition: User logged in as admin
+  Postcondition: Appeals list displayed
+  
+- UC26: Approve Appeal
+  Actor: Admin User
+  Description: Admin approves suspension appeal
+  Precondition: User logged in as admin, appeal exists
+  Postcondition: Appeal status changed to 'approved', user reactivated
+  
+- UC27: Reject Appeal
+  Actor: Admin User
+  Description: Admin rejects suspension appeal
+  Precondition: User logged in as admin, appeal exists
+  Postcondition: Appeal status changed to 'rejected'
+
+EXPORT:
+- UC28: Export Note
+  Actor: Regular User
+  Description: User exports note to PDF/Word/Text
+  Precondition: User logged in, note exists
+  Postcondition: File downloaded
+
+================================================================================
+                        CLASS DIAGRAM SPECIFICATION
+================================================================================
+
+CLASSES:
+
+1. USER CLASS
+   Attributes:
+   - _id: ObjectId
+   - name: String
+   - email: String
+   - password: String (hashed)
+   - role: String (enum: 'user', 'admin')
+   - isActive: Boolean
+   - aiRequestsToday: Number
+   - aiRequestsLimit: Number
+   - lastAIRequestReset: Date
+   - createdAt: Date
+   - updatedAt: Date
+   
+   Methods:
+   - signup(name, email, password): User
+   - login(email, password): {token, user}
+   - logout(): void
+   - updateProfile(data): User
+   - changePassword(oldPassword, newPassword): void
+   - suspendAccount(): void
+   - reactivateAccount(): void
+   - promoteToAdmin(): void
+   - demoteToUser(): void
+   - checkAIRateLimit(): Boolean
+   - incrementAIRequest(): void
+   - resetAIRequests(): void
+
+2. NOTE CLASS
+   Attributes:
+   - _id: ObjectId
+   - title: String
+   - content: String
+   - summary: String (optional)
+   - user: ObjectId (ref: User)
+   - sharedWith: [ObjectId] (ref: User)
+   - createdAt: Date
+   - updatedAt: Date
+   
+   Methods:
+   - create(title, content, userId): Note
+   - read(noteId): Note
+   - update(noteId, title, content): Note
+   - delete(noteId): void
+   - shareWith(noteId, userId): void
+   - unshareWith(noteId, userId): void
+   - getSharedNotes(userId): [Note]
+   - getUserNotes(userId): [Note]
+
+3. SUSPENSION_REQUEST CLASS
+   Attributes:
+   - _id: ObjectId
+   - user: ObjectId (ref: User)
+   - userEmail: String
+   - userName: String
+   - reason: String
+   - status: String (enum: 'pending', 'approved', 'rejected')
+   - adminResponse: String (optional)
+   - resolvedAt: Date (optional)
+   - resolvedBy: ObjectId (ref: User, optional)
+   - createdAt: Date
+   - updatedAt: Date
+   
+   Methods:
+   - submit(userId, reason): SuspensionRequest
+   - getUserRequests(userId): [SuspensionRequest]
+   - getAllRequests(): [SuspensionRequest]
+   - approve(requestId, adminId, response): SuspensionRequest
+   - reject(requestId, adminId, response): SuspensionRequest
+   - getPendingRequests(): [SuspensionRequest]
+
+4. AI_SERVICE CLASS
+   Methods:
+   - summarizeNote(content): {summary, detailedSummary, teacherExplanation, studyNotes, questions}
+   - extractKeywords(content): [String]
+   - rewriteContent(content, style): String
+   - askQuestion(content, question): String
+   - generateQuiz(content): [{question, options, correctAnswer, explanation}]
+   - checkRateLimit(userId): Boolean
+   - callGeminiAPI(prompt): String
+
+5. AUTH_SERVICE CLASS
+   Methods:
+   - hashPassword(password): String
+   - comparePassword(password, hash): Boolean
+   - generateToken(userId): String
+   - verifyToken(token): {userId, role}
+   - validateEmail(email): Boolean
+   - validatePassword(password): Boolean
+
+6. ADMIN_SERVICE CLASS
+   Methods:
+   - getAnalytics(): {totalUsers, totalNotes, totalAIRequests}
+   - getAllUsers(): [User]
+   - suspendUser(userId): User
+   - unsuspendUser(userId): User
+   - promoteUser(userId): User
+   - demoteUser(userId): User
+   - getAppealStats(): {pending, approved, rejected}
+
+7. PDF_SERVICE CLASS
+   Methods:
+   - uploadPDF(file, userId): {fileId, metadata}
+   - extractText(fileId): String
+   - processPDFWithAI(fileId, feature): Result
+   - deletePDF(fileId): void
+
+8. EXPORT_SERVICE CLASS
+   Methods:
+   - exportToPDF(noteId): File
+   - exportToWord(noteId): File
+   - exportToText(noteId): File
+   - batchExport(noteIds, format): File
+
+RELATIONSHIPS:
+
+User --(1:N)--> Note
+  - One user can have many notes
+  - Note.user references User._id
+
+User --(N:N)--> Note (sharedWith)
+  - Many users can share many notes
+  - Note.sharedWith contains array of User._ids
+
+User --(1:N)--> SuspensionRequest
+  - One user can have many suspension requests
+  - SuspensionRequest.user references User._id
+
+User --(1:N)--> SuspensionRequest (resolvedBy)
+  - One admin can resolve many suspension requests
+  - SuspensionRequest.resolvedBy references User._id
+
+AI_SERVICE --> User
+  - AI service checks user rate limits
+  - Calls Google Gemini API
+
+AUTH_SERVICE --> User
+  - Authentication service manages user authentication
+  - Generates and verifies tokens
+
+ADMIN_SERVICE --> User
+  - Admin service manages user operations
+  - Manages suspensions and promotions
+
+ADMIN_SERVICE --> SuspensionRequest
+  - Admin service manages suspension appeals
+  - Approves/rejects appeals
+
+PDF_SERVICE --> Note
+  - PDF service processes PDF content
+  - Can apply AI features to PDF text
+
+EXPORT_SERVICE --> Note
+  - Export service exports notes to various formats
+
+================================================================================
+                        SEQUENCE DIAGRAM SCENARIOS
+================================================================================
+
+SCENARIO 1: User Registration and Login
+1. User enters credentials
+2. Frontend validates input
+3. Frontend sends POST /auth/signup
+4. Backend validates email uniqueness
+5. Backend hashes password
+6. Backend creates User document
+7. Backend generates JWT token
+8. Backend returns token and user data
+9. Frontend stores token in localStorage
+10. Frontend redirects to dashboard
+
+SCENARIO 2: Create and Share Note
+1. User creates note with title and content
+2. Frontend sends POST /notes
+3. Backend creates Note document with user reference
+4. Backend returns created note
+5. User clicks share button
+6. User enters recipient email
+7. Frontend sends POST /notes/:id/share
+8. Backend adds recipient to sharedWith array
+9. Backend returns updated note
+10. Recipient sees note in their dashboard
+
+SCENARIO 3: Suspend User and Submit Appeal
+1. Admin suspends user
+2. Backend sets user.isActive = false
+3. User tries to login
+4. Backend generates token
+5. Backend checks isActive = false
+6. Backend returns 403 with token
+7. Frontend stores token
+8. Frontend redirects to /suspended
+9. User submits appeal with reason
+10. Frontend sends POST /suspension-requests/submit
+11. Backend creates SuspensionRequest with status 'pending'
+12. Admin reviews appeal
+13. Admin approves appeal
+14. Backend sets user.isActive = true
+15. User can login again
+
+SCENARIO 4: Use AI Summarize Feature
+1. User clicks summarize button
+2. Frontend sends POST /ai/summarize with content
+3. Backend checks rate limit
+4. Backend calls Google Gemini API
+5. Gemini returns structured summary
+6. Backend returns 4-part summary
+7. Frontend displays results in modal
+8. User can view/export summary
+
+================================================================================
+                        ENTITY RELATIONSHIP DIAGRAM
+================================================================================
+
+ENTITIES:
+- User
+- Note
+- SuspensionRequest
+
+RELATIONSHIPS:
+- User (1) ---> (N) Note [user_id]
+- User (N) <---> (N) Note [sharedWith]
+- User (1) ---> (N) SuspensionRequest [user_id]
+- User (1) ---> (N) SuspensionRequest [resolvedBy_id]
+
+ATTRIBUTES:
+User: _id, name, email, password, role, isActive, aiRequestsToday, aiRequestsLimit, lastAIRequestReset, createdAt, updatedAt
+
+Note: _id, title, content, summary, user_id, sharedWith[], createdAt, updatedAt
+
+SuspensionRequest: _id, user_id, userEmail, userName, reason, status, adminResponse, resolvedAt, resolvedBy_id, createdAt, updatedAt
+
+================================================================================
+                        STATE DIAGRAM
+================================================================================
+
+USER STATES:
+- Active: User can login and access all features
+- Suspended: User cannot login, can submit appeals
+- Reactivated: User can login again after appeal approval
+
+APPEAL STATES:
+- Pending: Appeal submitted, awaiting admin review
+- Approved: Appeal approved, user reactivated
+- Rejected: Appeal rejected, user remains suspended
+
+NOTE STATES:
+- Draft: Note created but not finalized
+- Published: Note finalized and visible
+- Shared: Note shared with other users
+- Archived: Note archived (future feature)
+- Deleted: Note deleted
+
+================================================================================
+                        END OF DIAGRAM SPECIFICATIONS
+================================================================================
+
+INSTRUCTIONS FOR AI:
+1. Use the above specifications to generate UML diagrams
+2. For Use Case Diagram: Include all actors and use cases with relationships
+3. For Class Diagram: Include all classes, attributes, methods, and relationships
+4. For Sequence Diagrams: Create diagrams for the 4 scenarios provided
+5. For Entity Relationship Diagram: Show all entities and their relationships
+6. For State Diagrams: Show state transitions for users, appeals, and notes
+7. Use standard UML notation and symbols
+8. Ensure all relationships are clearly labeled
+9. Include cardinality (1:1, 1:N, N:N) on relationships
+10. Add descriptive labels to all elements
+

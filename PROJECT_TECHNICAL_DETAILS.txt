@@ -1,0 +1,464 @@
+================================================================================
+                    SMARTNOTES - TECHNICAL SPECIFICATIONS
+================================================================================
+
+PROJECT: SmartNotes - AI-Powered Note Taking Application
+VERSION: 1.0
+LAST UPDATED: 2025-10-30
+
+================================================================================
+                        SYSTEM ARCHITECTURE
+================================================================================
+
+ARCHITECTURE PATTERN: MERN Stack (MongoDB, Express, React, Node.js)
+DEPLOYMENT MODEL: Client-Server Architecture
+AUTHENTICATION: JWT-based stateless authentication
+DATABASE: NoSQL (MongoDB)
+API STYLE: RESTful API
+
+LAYERS:
+1. Presentation Layer (Frontend - React/Vite)
+2. API Layer (Express.js REST API)
+3. Business Logic Layer (Controllers)
+4. Data Access Layer (MongoDB Models)
+5. External Services (Google Gemini AI API)
+
+================================================================================
+                        DATABASE SCHEMA DETAILS
+================================================================================
+
+USER COLLECTION:
+{
+  _id: ObjectId,
+  name: String (required, trimmed),
+  email: String (required, unique, lowercase),
+  password: String (required, hashed with bcrypt),
+  role: String (enum: ['user', 'admin'], default: 'user'),
+  isActive: Boolean (default: true),
+  aiRequestsToday: Number (default: 0),
+  aiRequestsLimit: Number (default: 100),
+  lastAIRequestReset: Date (default: Date.now),
+  createdAt: Date (auto),
+  updatedAt: Date (auto)
+}
+
+NOTE COLLECTION:
+{
+  _id: ObjectId,
+  title: String (required, trimmed),
+  content: String (required),
+  summary: String (optional, AI-generated),
+  user: ObjectId (ref: User, required),
+  sharedWith: [ObjectId] (ref: User),
+  createdAt: Date (auto),
+  updatedAt: Date (auto)
+}
+
+SUSPENSION_REQUEST COLLECTION:
+{
+  _id: ObjectId,
+  user: ObjectId (ref: User, required),
+  userEmail: String (required),
+  userName: String (required),
+  reason: String (required, min 10 chars),
+  status: String (enum: ['pending', 'approved', 'rejected'], default: 'pending'),
+  adminResponse: String (optional),
+  resolvedAt: Date (optional),
+  resolvedBy: ObjectId (ref: User, optional),
+  createdAt: Date (auto),
+  updatedAt: Date (auto)
+}
+
+================================================================================
+                        API SPECIFICATIONS
+================================================================================
+
+BASE URL: http://localhost:5000/api
+
+AUTHENTICATION ENDPOINTS:
+1. POST /auth/signup
+   Request: { name, email, password }
+   Response: { message, token, user }
+   Status: 201 Created
+
+2. POST /auth/login
+   Request: { email, password }
+   Response: { message, token, user }
+   Status: 200 OK or 403 Forbidden (if suspended)
+
+NOTE ENDPOINTS:
+1. POST /notes
+   Headers: Authorization: Bearer {token}
+   Request: { title, content }
+   Response: { _id, title, content, user, sharedWith, createdAt, updatedAt }
+   Status: 201 Created
+
+2. GET /notes
+   Headers: Authorization: Bearer {token}
+   Response: [{ note objects }]
+   Status: 200 OK
+
+3. PATCH /notes/:id
+   Headers: Authorization: Bearer {token}
+   Request: { title, content }
+   Response: { updated note object }
+   Status: 200 OK
+
+4. DELETE /notes/:id
+   Headers: Authorization: Bearer {token}
+   Response: { message }
+   Status: 200 OK
+
+5. POST /notes/:id/share
+   Headers: Authorization: Bearer {token}
+   Request: { email }
+   Response: { message, note }
+   Status: 200 OK
+
+AI ENDPOINTS:
+1. POST /ai/summarize
+   Headers: Authorization: Bearer {token}
+   Request: { content }
+   Response: { summary, detailedSummary, teacherExplanation, studyNotes, questions }
+   Status: 200 OK
+
+2. POST /ai/keywords
+   Headers: Authorization: Bearer {token}
+   Request: { content }
+   Response: { keywords: [array] }
+   Status: 200 OK
+
+3. POST /ai/rewrite
+   Headers: Authorization: Bearer {token}
+   Request: { content, style }
+   Response: { rewrittenContent }
+   Status: 200 OK
+
+4. POST /ai/ask
+   Headers: Authorization: Bearer {token}
+   Request: { content, question }
+   Response: { answer }
+   Status: 200 OK
+
+5. POST /ai/quiz
+   Headers: Authorization: Bearer {token}
+   Request: { content }
+   Response: { questions: [{ question, options, correctAnswer, explanation }] }
+   Status: 200 OK
+
+ADMIN ENDPOINTS:
+1. GET /admin/analytics
+   Headers: Authorization: Bearer {token}
+   Response: { totalUsers, totalNotes, totalAIRequests }
+   Status: 200 OK
+
+2. GET /admin/users
+   Headers: Authorization: Bearer {token}
+   Response: [{ user objects }]
+   Status: 200 OK
+
+3. PATCH /admin/users/:id/suspend
+   Headers: Authorization: Bearer {token}
+   Response: { message, user }
+   Status: 200 OK
+
+4. PATCH /admin/users/:id/promote
+   Headers: Authorization: Bearer {token}
+   Response: { message, user }
+   Status: 200 OK
+
+SUSPENSION REQUEST ENDPOINTS:
+1. POST /suspension-requests/submit
+   Headers: Authorization: Bearer {token}
+   Request: { reason }
+   Response: { message, request }
+   Status: 201 Created
+
+2. GET /suspension-requests/my-requests
+   Headers: Authorization: Bearer {token}
+   Response: [{ suspension request objects }]
+   Status: 200 OK
+
+3. GET /suspension-requests
+   Headers: Authorization: Bearer {token}
+   Response: [{ suspension request objects }]
+   Status: 200 OK (admin only)
+
+4. PATCH /suspension-requests/:requestId/approve
+   Headers: Authorization: Bearer {token}
+   Request: { response }
+   Response: { message, request }
+   Status: 200 OK (admin only)
+
+5. PATCH /suspension-requests/:requestId/reject
+   Headers: Authorization: Bearer {token}
+   Request: { response }
+   Response: { message, request }
+   Status: 200 OK (admin only)
+
+================================================================================
+                        MIDDLEWARE CHAIN
+================================================================================
+
+PROTECTED ROUTES FLOW:
+1. Request arrives at route
+2. authMiddleware executes
+   - Extracts token from Authorization header
+   - Verifies JWT signature
+   - Extracts userId from token
+   - Attaches userId to req.userId
+   - If invalid: returns 401 Unauthorized
+3. checkUserActive middleware executes (on protected routes)
+   - Checks if user.isActive === true
+   - If false: returns 403 Forbidden
+4. Route handler executes
+   - Has access to req.userId
+   - Can query user data
+
+ADMIN ROUTES FLOW:
+1. authMiddleware (same as above)
+2. adminMiddleware executes
+   - Checks if user.role === 'admin'
+   - If not: returns 403 Forbidden
+3. Route handler executes
+
+================================================================================
+                        AUTHENTICATION FLOW
+================================================================================
+
+SIGNUP FLOW:
+1. User enters name, email, password
+2. Frontend validates form
+3. POST /auth/signup with credentials
+4. Backend checks if email exists
+5. Backend hashes password with bcrypt
+6. Backend creates User document
+7. Backend generates JWT token (7-day expiration)
+8. Backend returns token and user data
+9. Frontend stores token in localStorage
+10. Frontend redirects to dashboard
+
+LOGIN FLOW:
+1. User enters email, password
+2. Frontend validates form
+3. POST /auth/login with credentials
+4. Backend finds user by email
+5. Backend compares password with hash
+6. Backend generates JWT token
+7. Backend checks if user.isActive === true
+   - If false: returns 403 with token (for appeal submission)
+   - If true: returns 200 with token
+8. Frontend stores token in localStorage
+9. Frontend redirects to dashboard (or /suspended if 403)
+
+PROTECTED REQUEST FLOW:
+1. Frontend makes request with Authorization header
+2. Header format: "Authorization: Bearer {token}"
+3. Backend authMiddleware extracts token
+4. Backend verifies token signature
+5. Backend extracts userId from token
+6. Backend attaches userId to request
+7. Route handler uses req.userId
+8. Response sent back to frontend
+
+================================================================================
+                        RATE LIMITING LOGIC
+================================================================================
+
+AI REQUEST RATE LIMITING:
+- Limit: 100 requests per user per day
+- Reset: Daily at midnight (or 24 hours from first request)
+- Tracking: aiRequestsToday, aiRequestsLimit, lastAIRequestReset
+
+RATE LIMIT CHECK:
+1. User makes AI request
+2. Backend checks aiRequestsToday < aiRequestsLimit
+3. If exceeded: returns 429 Too Many Requests
+4. If within limit: increments aiRequestsToday
+5. If 24 hours passed: resets aiRequestsToday to 0
+
+================================================================================
+                        ERROR HANDLING
+================================================================================
+
+HTTP STATUS CODES:
+- 200 OK - Successful request
+- 201 Created - Resource created successfully
+- 400 Bad Request - Invalid input/validation error
+- 401 Unauthorized - Missing or invalid token
+- 403 Forbidden - Insufficient permissions or suspended account
+- 404 Not Found - Resource not found
+- 429 Too Many Requests - Rate limit exceeded
+- 500 Internal Server Error - Server error
+
+ERROR RESPONSE FORMAT:
+{
+  message: "Error description",
+  error: "Error details (optional)"
+}
+
+VALIDATION ERRORS:
+- Email format validation
+- Password strength validation
+- Required field validation
+- Minimum character length validation
+- Unique constraint validation
+
+================================================================================
+                        SECURITY CONSIDERATIONS
+================================================================================
+
+PASSWORD SECURITY:
+- Hashed with bcrypt (salt rounds: 10)
+- Never stored in plain text
+- Never returned in API responses
+- Compared using bcrypt.compare()
+
+TOKEN SECURITY:
+- JWT with HS256 algorithm
+- 7-day expiration
+- Signed with JWT_SECRET
+- Stored in localStorage (client-side)
+- Sent in Authorization header
+
+CORS SECURITY:
+- Configured origin restrictions
+- Allowed methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+- Allowed headers: Content-Type, Authorization
+- Credentials: true
+
+INPUT VALIDATION:
+- Server-side validation on all endpoints
+- Email format validation
+- Password minimum length
+- Content length limits
+- Type checking
+
+AUTHORIZATION:
+- Role-based access control (RBAC)
+- User can only access own notes
+- Admin can access all resources
+- Suspended users cannot access features
+
+================================================================================
+                        EXTERNAL INTEGRATIONS
+================================================================================
+
+GOOGLE GEMINI API:
+- Model: gemini-1.5-flash (configurable)
+- Purpose: AI-powered note analysis
+- Features:
+  * Summarization with structured output
+  * Keyword extraction
+  * Content rewriting
+  * Q&A functionality
+  * Quiz generation
+- Rate Limiting: Per-user daily limit (100 requests)
+- Error Handling: Graceful fallback if API unavailable
+
+================================================================================
+                        FRONTEND STATE MANAGEMENT
+================================================================================
+
+CONTEXT API (AuthContext):
+- Stores: user, token, isAuthenticated
+- Methods: login(), logout(), signup()
+- Persists: localStorage for token and user data
+- Used by: ProtectedRoute, Navbar, all pages
+
+LOCAL STATE:
+- Component-level state for forms, modals, loading
+- useState for form inputs
+- useState for loading/error states
+- useState for modal visibility
+
+================================================================================
+                        PERFORMANCE CONSIDERATIONS
+================================================================================
+
+OPTIMIZATION TECHNIQUES:
+1. Lazy loading of routes
+2. Code splitting with Vite
+3. Image optimization
+4. CSS minification
+5. Database indexing on frequently queried fields
+6. Pagination for large datasets (future)
+7. Caching strategies (future)
+
+BOTTLENECKS:
+- AI API calls (external service latency)
+- Database queries on large collections
+- File uploads (PDF processing)
+
+================================================================================
+                        TESTING REQUIREMENTS
+================================================================================
+
+UNIT TESTS:
+- Authentication functions
+- Note CRUD operations
+- AI feature functions
+- Validation functions
+
+INTEGRATION TESTS:
+- Complete user workflows
+- API endpoint testing
+- Database operations
+- Authentication flow
+
+E2E TESTS:
+- User signup and login
+- Note creation and sharing
+- AI feature usage
+- Admin operations
+- Suspension and appeal flow
+
+================================================================================
+                        DEPLOYMENT CHECKLIST
+================================================================================
+
+BACKEND:
+- [ ] Set MONGO_URI environment variable
+- [ ] Set JWT_SECRET environment variable
+- [ ] Set GEMINI_API_KEY environment variable
+- [ ] Set PORT environment variable
+- [ ] Set CORS_ORIGIN environment variable
+- [ ] Install dependencies: npm install
+- [ ] Start server: npm start
+
+FRONTEND:
+- [ ] Set VITE_API_BASE_URL environment variable
+- [ ] Install dependencies: npm install
+- [ ] Build: npm run build
+- [ ] Deploy build folder to hosting
+
+DATABASE:
+- [ ] MongoDB instance running
+- [ ] Database created
+- [ ] Collections created (auto-created by Mongoose)
+- [ ] Indexes created for performance
+
+================================================================================
+                        FUTURE ENHANCEMENTS
+================================================================================
+
+1. Real-time collaboration on notes
+2. Advanced search and filtering
+3. Note versioning and history
+4. Offline mode with sync
+5. Mobile app (React Native)
+6. Advanced analytics dashboard
+7. Notification system
+8. Email notifications
+9. Two-factor authentication
+10. Social features (comments, likes)
+11. Advanced export formats
+12. Integration with cloud storage
+13. API rate limiting per IP
+14. Audit logging
+15. Data backup and recovery
+
+================================================================================
+                        END OF TECHNICAL SPECIFICATIONS
+================================================================================
+

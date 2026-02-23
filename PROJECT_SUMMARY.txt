@@ -1,0 +1,447 @@
+================================================================================
+                        SMARTNOTES - PROJECT SUMMARY
+================================================================================
+
+PROJECT NAME: SmartNotes
+DESCRIPTION: A full-stack web application for creating, managing, and sharing 
+             notes with AI-powered features for summarization, analysis, and 
+             interactive learning.
+
+TECH STACK:
+- Frontend: React (Vite), Tailwind CSS, React Router
+- Backend: Node.js, Express.js
+- Database: MongoDB
+- AI Integration: Google Gemini API
+- Authentication: JWT (JSON Web Tokens)
+- File Upload: PDF support with file handling
+
+================================================================================
+                            CORE FUNCTIONALITIES
+================================================================================
+
+1. USER AUTHENTICATION & AUTHORIZATION
+   - User Registration (Signup)
+   - User Login with JWT token generation
+   - Role-based access control (User, Admin)
+   - Password hashing and security
+   - Token-based authentication for all protected routes
+   - Account suspension and appeal system
+
+2. NOTE MANAGEMENT
+   - Create notes with title and content
+   - Read/View all user's notes
+   - Update/Edit existing notes
+   - Delete notes
+   - Share notes with other users
+   - View shared notes from other users
+   - Note timestamps (created, updated)
+
+3. AI-POWERED FEATURES
+   - Summarize Notes: Generate comprehensive summaries with 4 structured tasks
+     * Detailed Summary
+     * Teacher Explanation (simple language)
+     * Study Notes Format (bullet points, keywords)
+     * Possible Exam Questions (5-10 questions)
+   - Extract Keywords: Identify key terms from notes
+   - Rewrite Content: Rephrase notes in different styles
+   - Ask AI: Interactive Q&A about note content
+   - Generate Quiz: Create 5 MCQ questions with explanations
+   - AI Request Rate Limiting: 100 requests per user per day
+
+4. PDF MANAGEMENT
+   - Upload PDF files
+   - Extract text from PDFs
+   - Process PDF content with AI features
+   - Store PDF metadata
+
+5. ADMIN DASHBOARD
+   - View all users in the system
+   - View analytics (total users, notes, AI requests)
+   - Suspend/Unsuspend user accounts
+   - Promote users to admin role
+   - Demote admins to user role
+   - Manage suspension appeals
+   - Approve/Reject user appeals with custom responses
+
+6. USER SUSPENSION & APPEAL SYSTEM
+   - Admin can suspend user accounts
+   - Suspended users cannot login normally
+   - Suspended users can submit appeals with reasons
+   - Appeal history tracking
+   - Admin review and approval/rejection of appeals
+   - Automatic user reactivation on appeal approval
+   - Admin response messages for appeals
+
+7. EXPORT FUNCTIONALITY
+   - Export notes to multiple formats (PDF, Word, Text)
+   - Batch export capabilities
+
+================================================================================
+                            DATA MODELS
+================================================================================
+
+USER MODEL:
+- _id: ObjectId (unique identifier)
+- name: String (required)
+- email: String (required, unique, lowercase)
+- password: String (required, hashed)
+- role: String (enum: 'user', 'admin', default: 'user')
+- isActive: Boolean (default: true, for suspension)
+- aiRequestsToday: Number (default: 0, for rate limiting)
+- aiRequestsLimit: Number (default: 100)
+- lastAIRequestReset: Date (for daily reset)
+- timestamps: createdAt, updatedAt
+
+NOTE MODEL:
+- _id: ObjectId (unique identifier)
+- title: String (required)
+- content: String (required)
+- summary: String (optional, AI-generated)
+- user: ObjectId (reference to User, required)
+- sharedWith: Array of ObjectIds (references to Users)
+- timestamps: createdAt, updatedAt
+
+SUSPENSION REQUEST MODEL:
+- _id: ObjectId (unique identifier)
+- user: ObjectId (reference to User, required)
+- userEmail: String (required)
+- userName: String (required)
+- reason: String (required, min 10 characters)
+- status: String (enum: 'pending', 'approved', 'rejected', default: 'pending')
+- adminResponse: String (optional, admin's response message)
+- resolvedAt: Date (when appeal was resolved)
+- resolvedBy: ObjectId (reference to Admin User)
+- timestamps: createdAt, updatedAt
+
+================================================================================
+                            API ENDPOINTS
+================================================================================
+
+AUTHENTICATION ROUTES (/api/auth):
+- POST /signup - Register new user
+- POST /login - Login user (returns JWT token)
+
+NOTE ROUTES (/api/notes):
+- POST / - Create new note
+- GET / - Get all user's notes (owned + shared)
+- GET /:id - Get specific note
+- PATCH /:id - Update note
+- DELETE /:id - Delete note
+- POST /:id/share - Share note with user
+- DELETE /:id/unshare - Unshare note
+
+AI ROUTES (/api/ai):
+- POST /summarize - Summarize note content
+- POST /keywords - Extract keywords
+- POST /rewrite - Rewrite content
+- POST /ask - Ask AI about content
+- POST /quiz - Generate quiz questions
+
+PDF ROUTES (/api/pdf):
+- POST /upload - Upload PDF file
+- GET /:id - Get PDF details
+
+ADMIN ROUTES (/api/admin):
+- GET /analytics - Get system analytics
+- GET /users - Get all users
+- PATCH /users/:id/suspend - Suspend user
+- PATCH /users/:id/unsuspend - Unsuspend user
+- PATCH /users/:id/promote - Promote to admin
+- PATCH /users/:id/demote - Demote to user
+
+SUSPENSION REQUEST ROUTES (/api/suspension-requests):
+- POST /submit - Submit appeal (suspended user)
+- GET /my-requests - Get user's appeals
+- GET / - Get all appeals (admin only)
+- PATCH /:requestId/approve - Approve appeal (admin)
+- PATCH /:requestId/reject - Reject appeal (admin)
+
+================================================================================
+                            FRONTEND PAGES
+================================================================================
+
+1. LOGIN PAGE (/login)
+   - Email and password input
+   - Login form validation
+   - Error handling
+   - Redirect to signup
+   - Suspension detection and redirect to appeal page
+
+2. SIGNUP PAGE (/signup)
+   - Name, email, password input
+   - Form validation
+   - Password confirmation
+   - Redirect to login
+
+3. DASHBOARD PAGE (/dashboard)
+   - Display all user's notes
+   - Create note button
+   - Edit note button
+   - Delete note button
+   - Share note button
+   - View note button
+   - Search/filter notes
+   - Upload PDF button
+
+4. ADMIN DASHBOARD PAGE (/admin)
+   - Analytics Tab: Total users, notes, AI requests
+   - Users Tab: List all users with suspend/promote/demote actions
+   - Appeals Tab: List all suspension appeals with approve/reject actions
+
+5. SUSPENSION APPEAL PAGE (/suspended)
+   - Appeal submission form
+   - Reason textarea (min 10 characters)
+   - Appeal history display
+   - Status badges (pending, approved, rejected)
+   - Admin response display
+
+6. UPLOAD PDF PAGE (/upload-pdf)
+   - PDF file upload
+   - File validation
+   - Upload progress
+   - Success/error messages
+
+================================================================================
+                            FRONTEND COMPONENTS
+================================================================================
+
+1. Navbar - Navigation bar with user menu
+2. ProtectedRoute - Route protection for authenticated users
+3. CreateNoteModal - Modal for creating new notes
+4. EditNoteModal - Modal for editing existing notes
+5. ViewNoteModal - Modal for viewing note details
+6. NoteCard - Card component displaying note preview
+7. AIResultModal - Modal displaying AI feature results
+8. SummaryResultModal - Modal for summary results
+9. QuizModal - Modal for quiz questions
+10. AskAIModal - Modal for AI Q&A
+11. LoadingSpinner - Loading indicator
+12. ErrorBoundary - Error handling component
+
+================================================================================
+                            MIDDLEWARE & SECURITY
+================================================================================
+
+1. authMiddleware - Validates JWT token and extracts user ID
+2. adminMiddleware - Validates admin role
+3. checkUserActive - Checks if user account is suspended
+4. CORS - Cross-origin resource sharing configuration
+5. Password Hashing - bcrypt for secure password storage
+6. JWT Tokens - 7-day expiration for session management
+7. Rate Limiting - 100 AI requests per user per day
+
+================================================================================
+                            KEY FEATURES
+================================================================================
+
+✓ User Authentication with JWT
+✓ Role-Based Access Control (User/Admin)
+✓ Note CRUD Operations
+✓ Note Sharing Between Users
+✓ AI-Powered Summarization (4-part structured output)
+✓ AI Keyword Extraction
+✓ AI Content Rewriting
+✓ Interactive AI Q&A
+✓ Quiz Generation with MCQ
+✓ PDF Upload and Processing
+✓ Admin Dashboard with Analytics
+✓ User Management (Suspend/Promote/Demote)
+✓ User Suspension with Appeal System
+✓ Appeal Management (Approve/Reject)
+✓ Export Notes to Multiple Formats
+✓ Rate Limiting for AI Features
+✓ Responsive UI with Tailwind CSS
+✓ Error Handling and Validation
+✓ Loading States and Spinners
+
+================================================================================
+                            USER ROLES & PERMISSIONS
+================================================================================
+
+REGULAR USER:
+- Create, read, update, delete own notes
+- Share notes with other users
+- View shared notes from others
+- Use AI features (with rate limit)
+- Upload PDFs
+- Submit suspension appeals
+- View own appeal history
+
+ADMIN USER:
+- All regular user permissions
+- View all users in system
+- View system analytics
+- Suspend/Unsuspend users
+- Promote users to admin
+- Demote admins to users
+- View all suspension appeals
+- Approve/Reject appeals with responses
+- Reactivate suspended users
+
+================================================================================
+                            WORKFLOW EXAMPLES
+================================================================================
+
+WORKFLOW 1: Create and Summarize a Note
+1. User logs in
+2. User creates note with title and content
+3. User clicks "Summarize" button
+4. AI generates 4-part summary (detailed, teacher explanation, study notes, questions)
+5. User views results in modal
+6. User can export or save summary
+
+WORKFLOW 2: Share Note with Another User
+1. User creates note
+2. User clicks "Share" button
+3. User enters recipient's email
+4. Note appears in recipient's dashboard
+5. Recipient can view but not edit shared note
+
+WORKFLOW 3: Admin Suspends User
+1. Admin goes to Admin Dashboard → Users tab
+2. Admin finds user and clicks "Suspend"
+3. User's isActive set to false
+4. User cannot login (gets 403 error)
+5. User is redirected to appeal page
+
+WORKFLOW 4: Suspended User Appeals
+1. Suspended user tries to login
+2. Gets 403 error with token
+3. Redirected to /suspended page
+4. User submits appeal with reason
+5. Appeal stored in database
+6. Admin sees appeal in Appeals tab
+7. Admin approves/rejects with response
+8. User reactivated on approval
+9. User can login again
+
+WORKFLOW 5: Admin Reviews Analytics
+1. Admin logs in
+2. Goes to Admin Dashboard → Analytics tab
+3. Views total users, notes, AI requests
+4. Can see system usage statistics
+
+================================================================================
+                            SECURITY FEATURES
+================================================================================
+
+1. Password Hashing - bcrypt with salt rounds
+2. JWT Authentication - Secure token-based auth
+3. Role-Based Access Control - User/Admin roles
+4. Account Suspension - Prevent unauthorized access
+5. Input Validation - Server-side validation
+6. CORS Protection - Configured origin restrictions
+7. Protected Routes - Middleware-based protection
+8. Rate Limiting - AI request limits per user
+9. Secure Token Storage - localStorage with Bearer scheme
+10. Error Handling - Proper HTTP status codes
+
+================================================================================
+                            DEPLOYMENT REQUIREMENTS
+================================================================================
+
+BACKEND:
+- Node.js runtime
+- MongoDB database
+- Environment variables:
+  * MONGO_URI - MongoDB connection string
+  * JWT_SECRET - Secret key for JWT signing
+  * GEMINI_API_KEY - Google Gemini API key
+  * PORT - Server port (default: 5000)
+  * CORS_ORIGIN - CORS origin configuration
+
+FRONTEND:
+- Node.js for build
+- Vite build tool
+- Environment variables:
+  * VITE_API_BASE_URL - Backend API URL
+
+================================================================================
+                            RECENT FIXES & IMPROVEMENTS
+================================================================================
+
+1. User Suspension Enforcement
+   - Added suspension check in login
+   - Added checkUserActive middleware to all protected routes
+   - Prevents suspended users from accessing any features
+
+2. Suspension Appeal System
+   - Created SuspensionRequest model
+   - Implemented appeal submission and management
+   - Added admin review interface
+   - Automatic user reactivation on approval
+
+3. Token Generation for Suspended Users
+   - Generate token before suspension check
+   - Include token in 403 response
+   - Allows suspended users to submit appeals
+
+4. API Endpoint Corrections
+   - Fixed suspension request endpoints
+   - Corrected admin dashboard API calls
+   - Resolved network errors in appeals tab
+
+================================================================================
+                            PROJECT STRUCTURE
+================================================================================
+
+backend/
+├── src/
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Note.js
+│   │   └── SuspensionRequest.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── noteController.js
+│   │   ├── aiController.js
+│   │   ├── pdfController.js
+│   │   ├── adminController.js
+│   │   └── suspensionRequestController.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── noteRoutes.js
+│   │   ├── aiRoutes.js
+│   │   ├── pdfRoutes.js
+│   │   ├── adminRoutes.js
+│   │   └── suspensionRequestRoutes.js
+│   ├── middleware/
+│   │   └── adminMiddleware.js
+│   └── processors/
+│       └── authProcessor.js
+└── server.js
+
+frontend/
+├── src/
+│   ├── pages/
+│   │   ├── Login.jsx
+│   │   ├── Signup.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── AdminDashboard.jsx
+│   │   ├── SuspensionAppeal.jsx
+│   │   └── UploadPDF.jsx
+│   ├── components/
+│   │   ├── Navbar.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   ├── CreateNoteModal.jsx
+│   │   ├── EditNoteModal.jsx
+│   │   ├── ViewNoteModal.jsx
+│   │   ├── NoteCard.jsx
+│   │   ├── AIResultModal.jsx
+│   │   ├── SummaryResultModal.jsx
+│   │   ├── QuizModal.jsx
+│   │   ├── AskAIModal.jsx
+│   │   ├── LoadingSpinner.jsx
+│   │   └── ErrorBoundary.jsx
+│   ├── contexts/
+│   │   └── AuthContext.jsx
+│   ├── services/
+│   │   ├── api.js
+│   │   └── exportService.js
+│   ├── App.jsx
+│   └── main.jsx
+
+================================================================================
+                            END OF PROJECT SUMMARY
+================================================================================
+
